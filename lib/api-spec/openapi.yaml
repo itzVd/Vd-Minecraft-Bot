@@ -1,0 +1,303 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: Minecraft Discord Bot Dashboard API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: auth
+    description: Discord OAuth2 authentication
+  - name: bot
+    description: Bot status and information
+  - name: minecraft
+    description: Minecraft server status
+  - name: settings
+    description: Guild bot settings
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current authenticated user
+      responses:
+        "200":
+          description: Authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiscordUser"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout current user
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /auth/guilds:
+    get:
+      operationId: getUserGuilds
+      tags: [auth]
+      summary: Get guilds where user has manage permissions and bot is present
+      responses:
+        "200":
+          description: List of manageable guilds
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Guild"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /bot/status:
+    get:
+      operationId: getBotStatus
+      tags: [bot]
+      summary: Get bot online status and stats
+      responses:
+        "200":
+          description: Bot status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotStatus"
+
+  /minecraft/status:
+    get:
+      operationId: getMinecraftStatus
+      tags: [minecraft]
+      summary: Check Minecraft server status
+      parameters:
+        - name: ip
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: port
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [java, bedrock]
+      responses:
+        "200":
+          description: Minecraft server status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MinecraftStatus"
+
+  /settings/{guildId}:
+    get:
+      operationId: getGuildSettings
+      tags: [settings]
+      summary: Get bot settings for a guild
+      parameters:
+        - name: guildId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Guild settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GuildSettings"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    put:
+      operationId: updateGuildSettings
+      tags: [settings]
+      summary: Update bot settings for a guild
+      parameters:
+        - name: guildId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GuildSettingsInput"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GuildSettings"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required: [status]
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required: [success]
+
+    DiscordUser:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        discriminator:
+          type: string
+        avatar:
+          type: ["string", "null"]
+        avatarUrl:
+          type: string
+      required: [id, username, discriminator, avatarUrl]
+
+    Guild:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        icon:
+          type: ["string", "null"]
+        iconUrl:
+          type: ["string", "null"]
+        hasBot:
+          type: boolean
+      required: [id, name, hasBot]
+
+    BotStatus:
+      type: object
+      properties:
+        online:
+          type: boolean
+        username:
+          type: ["string", "null"]
+        ping:
+          type: ["integer", "null"]
+        guildCount:
+          type: ["integer", "null"]
+        uptime:
+          type: ["integer", "null"]
+      required: [online]
+
+    MinecraftStatus:
+      type: object
+      properties:
+        online:
+          type: boolean
+        ip:
+          type: string
+        port:
+          type: integer
+        version:
+          type: ["string", "null"]
+        playersOnline:
+          type: ["integer", "null"]
+        playersMax:
+          type: ["integer", "null"]
+        motd:
+          type: ["string", "null"]
+        iconUrl:
+          type: ["string", "null"]
+      required: [online, ip, port]
+
+    GuildSettings:
+      type: object
+      properties:
+        guildId:
+          type: string
+        minecraftIp:
+          type: ["string", "null"]
+        minecraftPort:
+          type: ["integer", "null"]
+        minecraftType:
+          type: string
+          enum: [java, bedrock]
+        welcomeChannelId:
+          type: ["string", "null"]
+        updatedAt:
+          type: string
+      required: [guildId, minecraftType]
+
+    GuildSettingsInput:
+      type: object
+      properties:
+        minecraftIp:
+          type: ["string", "null"]
+        minecraftPort:
+          type: ["integer", "null"]
+        minecraftType:
+          type: string
+          enum: [java, bedrock]
+        welcomeChannelId:
+          type: ["string", "null"]

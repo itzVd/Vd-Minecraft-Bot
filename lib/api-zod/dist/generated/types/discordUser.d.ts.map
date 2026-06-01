@@ -1,0 +1,1 @@
+{"version":3,"file":"discordUser.d.ts","sourceRoot":"","sources":["../../../src/generated/types/discordUser.ts"],"names":[],"mappings":"AAAA;;;;;;GAMG;AAEH,MAAM,WAAW,WAAW;IAC1B,EAAE,EAAE,MAAM,CAAC;IACX,QAAQ,EAAE,MAAM,CAAC;IACjB,aAAa,EAAE,MAAM,CAAC;IACtB,gBAAgB;IAChB,MAAM,CAAC,EAAE,MAAM,GAAG,IAAI,CAAC;IACvB,SAAS,EAAE,MAAM,CAAC;CACnB"}
